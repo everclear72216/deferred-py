@@ -1,6 +1,4 @@
 
-import asyncio
-
 from enum import IntEnum
 
 class AbstractScheduler(object):
