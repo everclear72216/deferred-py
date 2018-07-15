@@ -1,35 +1,77 @@
+'''`deferred` provides a Javascript-style promise API for python.
+'''
 
 from enum import IntEnum
 
 class AbstractScheduler(object):
+    '''
+    Currently `deferred` requires a single user defined function to schedule a function call for
+    later execution in an event loop style infrastructure. To stay library agnostic 
+    `AbstractScheduler` derived classes are supposed to  hide the idiosynchrasies of how scheduling
+    function calls works in your environment.
+    '''
 
     def __init__(self):
         super(AbstractScheduler, self).__init__()
 
     def schedule_call(self, func):
+        '''
+        You need to re-implement this function for your runtime environment. `deferred` will call
+        this method with a signle argument of type function. The function will not take parameters
+        and it will return None.
+
+        :param func: A function that takes no parameters and returns None. You need to schedule
+                     this function to be called at a later point in time.
+        '''
         raise NotImplementedError("AbstractScheduler.schedule_call() not implemented.")
 
 class ImmediateScheduler(AbstractScheduler):
-
+    '''
+    The `ImmediateScheduler` is a non-conformant implementation of the `AbstractScheduler`. It
+    violates the interface's contract by not scheduling calls to a later point in time. Calls
+    are pushed to the current stack of the caller. This is extremely dangerous if called from a
+    process that runs in another thread.
+    '''
     def __init__(self):
         super(ImmediateScheduler, self).__init__()
 
     def schedule_call(self, func):
+        '''
+        Calls `func` immediately. This is most probably not what you want. However, it comes in
+        handy when fooling around with `deferred` as long as there is no event loop in your
+        project.
+        '''
         func()
 
 scheduler = ImmediateScheduler()
 
 def set_scheduler(sched):
+    '''
+    Currently `deferred` uses a single global instance of an `AbstractScheduler` derived class as
+    interface to the scheduling facilities of your application. You will need to define your own
+    `AbstractScheduler` derived class and pass an instance of it to this function in order to
+    successfully use `deferred`.
+
+    :param sched: An instance of an `AbstractScheduler` derived class.
+    '''
     global scheduler
     scheduler = sched
 
 class DeferredStates(IntEnum):
+    '''
+    This enum defines the three states a deferred call can be in. It is `FULFILLED` if the call was
+    executed successfully and its result is ready to be retrieved. And it can also be `REJECTED` in
+    case some error occurred. `REJECTED` also means that a `reason` can be retrieved which is a
+    value containing information about what went wrong.
+    '''
     PENDING=0
     FULFILLED=1
     REJECTED=2
 
 class Deferred(object):
-
+    '''
+    When implementing functions.
+    '''
     def __init__(self):
         print(self, 'created')
         super(Deferred, self).__init__()
