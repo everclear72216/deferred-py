@@ -41,9 +41,6 @@ for passing arbitrary information (usually progress information) back to the mai
 still running. All callbacks are called with a single positional argument representing the result,
 the reason for failure and intermediate information respectively.
 
-The virtues of the promise pattern over futures do reveal themselves until you hit a certain level
-of complexity.
-
 Separation of Control and Execution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
