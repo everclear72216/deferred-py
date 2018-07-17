@@ -82,11 +82,11 @@ class Deferred(object):
     def get_promise(self):
         return self._promise
 
-    def fulfil(self, value):
+    def fulfill(self, value):
         if self._state == DeferredStates.PENDING:
             global scheduler
             self._state = DeferredStates.FULFILLED
-            scheduler.schedule_call(lambda: self._promise.fulfil(value))
+            scheduler.schedule_call(lambda: self._promise.fulfill(value))
 
     def reject(self, reason):
         if self._state == DeferredStates.PENDING:
@@ -112,11 +112,11 @@ class Promise(object):
 
         self._state = DeferredStates.PENDING
 
-    def fulfil(self, value):
+    def fulfill(self, value):
         self._state = DeferredStates.FULFILLED
         self._value = value
         for l in self._listeners:
-            l.fulfil(self._value)
+            l.fulfill(self._value)
 
     def reject(self, reason):
         self._state = DeferredStates.REJECTED
@@ -142,7 +142,7 @@ class Promise(object):
             self._listeners.append(l)
         elif self._state == DeferredStates.FULFILLED:
             print(self, 'already fulfilled')
-            l.fulfil(self._value)
+            l.fulfill(self._value)
         elif self._state == DeferredStates.REJECTED:
             print(self, 'already rejected')
             l.reject(self._reason)
@@ -160,22 +160,22 @@ class Listener(object):
         self._on_rejected = on_rejected
         self._on_notify = on_notify
 
-    def fulfil(self, value):
+    def fulfill(self, value):
         if self._on_fulfilled:
             try:
                 result = self._on_fulfilled(value)
                 if self._deferred.get_promise() == result:
                     raise TypeError('Handlers must return a new promise.')
                 elif isinstance(result, Promise):
-                    result.then(lambda value: self._deferred.fulfil(value),
+                    result.then(lambda value: self._deferred.fulfill(value),
                         lambda reason: self._deferred.reject(reason),
                         lambda value: self._deferred.notify(value))
                 else:
-                    self._deferred.fulfil(result)
+                    self._deferred.fulfill(result)
             except Exception as exc:
                 self._deferred.reject(exc)
         else:
-            self._deferred.fulfil(value)
+            self._deferred.fulfill(value)
 
     def reject(self, reason):
         if self._on_rejected:
@@ -184,7 +184,7 @@ class Listener(object):
                 if self._deferred.get_promise() == result:
                     raise TypeError('Handlers must return a new promise.')
                 elif isinstance(result, Promise):
-                    result.then(lambda value: self._deferred.fulfil(value),
+                    result.then(lambda value: self._deferred.fulfill(value),
                         lambda reason: self._deferred.reject(reason),
                         lambda value: self._deferred.notify(value))
                 else:
