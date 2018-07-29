@@ -64,8 +64,8 @@ functions. So you quickly find yourself in a situation where one asynchronous ca
 result of a previous asynchronous call, and so on. This results in chains, or more precisely in 
 trees considering error handling.
 
-Chaining
-~~~~~~~~
+Promise Chaining
+~~~~~~~~~~~~~~~~
 
 The support for chains is what makes Promise more powerful than Future. Promise demands that `then`
 itself returns another promise. The behavior of the returned promise depends on the return values
